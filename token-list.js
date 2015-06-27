@@ -244,7 +244,7 @@
 
 
 				/**
-				 * IE8 can't define properties on native JavaScript objects, so we'll use a retarded hack instead.
+				 * IE8 can't define properties on native JavaScript objects, so we'll use a dumb hack instead.
 				 *
 				 * What this is doing is creating a dummy element ("reflection") inside a detached phantom node ("mirror")
 				 * that serves as the target of Object.defineProperty instead. While we could simply use the subject HTML
@@ -283,8 +283,12 @@
 			}, TRUE);
 		},
 
-		dummyNode,
-		dummyNodeClasses;
+		/** Variables used for patching native methods that're partially implemented (IE doesn't support adding/removing multiple tokens, for instance). */
+		testList,
+		nativeAdd,
+		nativeRemove;
+
+
 
 
 	/** No discernible DOMTokenList support whatsoever. Time to remedy that. */
@@ -306,19 +310,43 @@
 	}
 
 
-	/** Possible support, but let's check for bugs. */
+	/**
+	 * Possible support, but let's check for bugs.
+	 *
+	 * Where arbitrary values are needed for performing a test, previous variables
+	 * are recycled to save space in the minified file.
+	 */
 	else{
-		dummyNode			=	DOC[ CREATE_ELEMENT ](DIV);
-		dummyNodeClasses	=	dummyNode[CLASS_LIST];
+		testList			=	DOC[ CREATE_ELEMENT ](DIV)[CLASS_LIST];
 
-		/** Check if the "force" option of .toggle is supported. */
-		if(dummyNodeClasses[TOGGLE](PROTOTYPE, FALSE)){
+		/** We'll replace a "string constant" to hold a reference to DOMTokenList.prototype (filesize optimisation, yaddah-yaddah...) */
+		PROTOTYPE			=	WIN[DOM_TOKEN_LIST][PROTOTYPE];
 
-			WIN[DOM_TOKEN_LIST][PROTOTYPE][TOGGLE]	=	function(token, force){
-				var THIS	=	this;
-				THIS[(force = UNDEF === force ? !THIS.contains(token) : force) ? ADD : REMOVE](token);
-				return !!force;
+
+		/** Check if we can pass multiple arguments to add/remove. To save space, we'll just recycle a previous array of strings. */
+		testList[ADD][APPLY](testList, METHODS);
+		if(2 > testList[LENGTH]){
+			nativeAdd		=	PROTOTYPE[ADD];
+			nativeRemove	=	PROTOTYPE[REMOVE];
+
+			PROTOTYPE[ADD]	=	function(){
+				for(var i = 0, args = arguments; i < args[LENGTH]; ++i)
+					nativeAdd.call(this, args[i]);
+			};
+
+			PROTOTYPE[REMOVE]	=	function(){
+				for(var i = 0, args = arguments; i < args[LENGTH]; ++i)
+					nativeRemove.call(this, args[i]);
 			};
 		}
+
+
+		/** Check if the "force" option of .toggle is supported. */
+		if(testList[TOGGLE](LIST, FALSE))
+			PROTOTYPE[TOGGLE]	=	function(token, force){
+				var THIS = this;
+				THIS[(force = UNDEF === force ? !THIS[CONTAINS](token) : force) ? ADD : REMOVE](token);
+				return !!force;
+			};
 	}
 }());

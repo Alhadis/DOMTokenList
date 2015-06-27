@@ -9,6 +9,7 @@
 		NULL	=	null,
 		TRUE	=	true,
 		FALSE	=	false,
+		/*>*/
 
 		/** String literals: Munge it up, baby. */
 		SPACE			=	" ",
@@ -17,19 +18,18 @@
 		DOM_TOKEN_LIST	=	"DOMTokenList",
 		DEFINE_GETTER	=	"__defineGetter__",
 		DEFINE_PROPERTY	=	"defineProperty",
+		CLASS_			=	"class",
+		LIST			=	"List",
 		REL				=	"rel",
-		REL_LIST		=	REL+"List",
+		REL_LIST		=	REL+LIST,
 		DIV				=	"div",
 		LENGTH			=	"length",
 		CONTAINS		=	"contains",
 		APPLY			=	"apply",
-		CALL			=	"call",
-		CLASS_			=	"class",
 		HTML_			=	"HTML",
 		METHODS			=	("item "+CONTAINS+" add remove toggle toString toLocaleString").split(SPACE),
 		REMOVE			=	METHODS[3],
 		PROTOTYPE		=	"prototype",
-		/*>*/
 
 
 
@@ -69,11 +69,13 @@
 					/** Define getter functions for array-like access to the tokenList's contents. */
 					if(length >= maxLength)
 						for(; maxLength < length; ++maxLength) (function(i){
+
 							defineGetter(THIS, i, function(){
-								preop[CALL](THIS);
+								preop();
 								return tokens[i];
 							}, FALSE);
-						})[CALL](THIS, maxLength);
+
+						})(maxLength);
 				},
 
 
@@ -102,20 +104,20 @@
 						for(i = 0; i < tokens[ LENGTH ]; ++i)
 							tokenMap[tokens[i]]	=	TRUE;
 						length	=	tokens[ LENGTH ];
-						reindex[CALL](THIS);
+						reindex();
 					}
 				};
 	
 	
 	
-			/** Populate our internal token lists if the targeted attribute of the subject element isn't empty. */
-			preop[CALL](THIS);
+			/** Populate our internal token list if the targeted attribute of the subject element isn't empty. */
+			preop();
 	
 	
 	
 			/** Returns the number of tokens in the underlying string. Read-only. */
 			defineGetter(THIS, LENGTH, function(){
-				preop[CALL](THIS);
+				preop();
 				return length;
 			});
 	
@@ -123,7 +125,7 @@
 			/** Override the default toString/toLocaleString methods to return a space-delimited list of tokens when typecast. */
 			THIS[ METHODS[6] /** toLocaleString */ ] =
 			THIS[ METHODS[5] /** toString		*/ ] = function(){
-				preop[CALL](THIS);
+				preop();
 				return tokens.join(SPACE);
 			};
 
@@ -131,14 +133,14 @@
 
 			/** Returns an item in the list by its index (or undefined if the number is greater than or equal to the length of the list) */
 			THIS.item	=	function(idx){
-				preop[CALL](THIS);
+				preop();
 				return tokens[idx];
 			};
 
 
 			/** Returns TRUE if the underlying string contains `token`; otherwise, FALSE. */
 			THIS[ CONTAINS ]	=	function(token){
-				preop[CALL](THIS);
+				preop();
 				return !!tokenMap[token];
 			};
 	
@@ -160,7 +162,7 @@
 				if(length !== tokens[ LENGTH ]){
 					length		=	tokens[ LENGTH ] >>> 0;
 					el[prop]	=	tokens.join(SPACE);
-					reindex[CALL](THIS);
+					reindex();
 				}
 			};
 
@@ -185,7 +187,7 @@
 	
 				/** Update the targeted attribute of the attached element. */
 				el[prop]	=	tokens.join(SPACE);
-				reindex[CALL](THIS);
+				reindex();
 			};
 
 
@@ -228,22 +230,27 @@
 		addProp	=	function(o, name, attr){
 
 			defineGetter(o[PROTOTYPE], name, function(){
-				var	tokenList,
-					cork	=	"__",
-					cork	=	cork + DEFINE_PROPERTY + name + cork,
-					THIS	=	this;
+				var	THIS = this,
+					tokenList,
 
-				if(THIS[cork]) return tokenList;
+				/** Prevent this from firing twice for some reason. What the hell, IE. */
+				gibberishProperty			=	DEFINE_GETTER + DEFINE_PROPERTY + name;
+				if(THIS[gibberishProperty]) return tokenList;
+				THIS[gibberishProperty]		=	TRUE;
 
-				THIS[cork]	=	TRUE;
 
-
-				/** IE8 can't define properties on native JavaScript objects, so we'll use a retarded hack instead. */
+				/**
+				 * IE8 can't define properties on native JavaScript objects, so we'll use a retarded hack instead.
+				 *
+				 * What this is doing is creating a dummy element ("reflection") inside a detached phantom node ("mirror")
+				 * that serves as the target of Object.defineProperty instead. While we could simply use the subject HTML
+				 * element instead, this would conflict with element types which use indexed properties (such as forms and
+				 * select lists).
+				 */
 				if(FALSE === dpSupport){
 
 					var	mirror = addProp.mirror		=	addProp.mirror || DOC[ CREATE_ELEMENT ](DIV),
 						reflections					=	mirror.childNodes,
-						REFLECTED_ELEMENT			=	"_ER",
 
 						/** Iterator variables */
 						l	= reflections[ LENGTH ],
@@ -251,25 +258,22 @@
 						visage;
 
 					for(; i < l; ++i)
-						if(reflections[i][ REFLECTED_ELEMENT ] === THIS){
+						if(reflections[i]._R === THIS){
 							visage	=	reflections[i];
 							break;
 						}
 
 					/** Couldn't find an element's reflection inside the mirror. Materialise one. */
-					if(!visage){
-						visage	=	DOC[ CREATE_ELEMENT ](DIV);
-						mirror.appendChild(visage);
-					}
+					visage || (visage = mirror.appendChild(DOC[ CREATE_ELEMENT ](DIV)));
 
-					tokenList	=	DOMTokenList[CALL](visage, THIS, attr);
+					tokenList = DOMTokenList.call(visage, THIS, attr);
 				}
 
 				else tokenList = new DOMTokenList(THIS, attr);
 
 
 				defineGetter(THIS, name, function(){ return tokenList; });
-				delete THIS[cork];
+				delete THIS[gibberishProperty];
 
 				return tokenList;
 			}, TRUE);
@@ -288,7 +292,7 @@
 		DOMTokenList.polyfill	=	TRUE;
 		WIN[ DOM_TOKEN_LIST ]	=	DOMTokenList;
 
-		addProp( WIN[ ELEMENT ], CLASS_+"List",	CLASS_+"Name");			/* Element.classList */
+		addProp( WIN[ ELEMENT ], CLASS_+LIST,	CLASS_+"Name");			/* Element.classList */
 		addProp( WIN[ HTML_+ "Link"		+ ELEMENT ], REL_LIST, REL);	/* HTMLLinkElement.relList */
 		addProp( WIN[ HTML_+ "Anchor"	+ ELEMENT ], REL_LIST, REL);	/* HTMLAnchorElement.relList */
 		addProp( WIN[ HTML_+ "Area"		+ ELEMENT ], REL_LIST, REL);	/* HTMLAreaElement.relList */

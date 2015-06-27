@@ -9,9 +9,10 @@
 		NULL	=	null,
 		TRUE	=	true,
 		FALSE	=	false,
+		UNDEF,
 		/*>*/
 
-		/** String literals: Munge it up, baby. */
+		/** Munge the hell out of our string literals. Saves a tonne of space after compression. */
 		SPACE			=	" ",
 		ELEMENT			=	"Element",
 		CREATE_ELEMENT	=	"create"+ELEMENT,
@@ -20,6 +21,7 @@
 		DEFINE_PROPERTY	=	"defineProperty",
 		CLASS_			=	"class",
 		LIST			=	"List",
+		CLASS_LIST		=	CLASS_+LIST,
 		REL				=	"rel",
 		REL_LIST		=	REL+LIST,
 		DIV				=	"div",
@@ -28,7 +30,9 @@
 		APPLY			=	"apply",
 		HTML_			=	"HTML",
 		METHODS			=	("item "+CONTAINS+" add remove toggle toString toLocaleString").split(SPACE),
+		ADD				=	METHODS[2],
 		REMOVE			=	METHODS[3],
+		TOGGLE			=	METHODS[4],
 		PROTOTYPE		=	"prototype",
 
 
@@ -147,7 +151,7 @@
 	
 	
 			/** Adds one or more tokens to the underlying string. */
-			THIS.add	=	function(){
+			THIS[ADD]	=	function(){
 				preop[APPLY](THIS, args = arguments);
 
 				for(var args, token, i = 0, l = args[ LENGTH ]; i < l; ++i){
@@ -193,13 +197,13 @@
 
 
 			/** Adds or removes a token depending on whether it's already contained within the token list. */
-			THIS.toggle	=	function(token, force){
+			THIS[TOGGLE]	=	function(token, force){
 				preop[APPLY](THIS, [token]);
-	
+
 				/** Token state's being forced. */
-				if(undefined !== force){
-					if(force)	{	THIS.add(token);		return TRUE;	}
-					else		{	THIS[ REMOVE ](token);	return FALSE;	}
+				if(UNDEF !== force){
+					if(force)	{	THIS[ADD](token);		return TRUE;	}
+					else		{	THIS[REMOVE](token);	return FALSE;	}
 				}
 	
 				/** Token already exists in tokenList. Remove it, and return FALSE. */
@@ -209,7 +213,7 @@
 				}
 
 				/** Otherwise, add the token and return TRUE. */
-				THIS.add(token);
+				THIS[ADD](token);
 				return TRUE;
 			};
 
@@ -277,7 +281,10 @@
 
 				return tokenList;
 			}, TRUE);
-		};
+		},
+
+		dummyNode,
+		dummyNodeClasses;
 
 
 	/** No discernible DOMTokenList support whatsoever. Time to remedy that. */
@@ -292,9 +299,26 @@
 		DOMTokenList.polyfill	=	TRUE;
 		WIN[ DOM_TOKEN_LIST ]	=	DOMTokenList;
 
-		addProp( WIN[ ELEMENT ], CLASS_+LIST,	CLASS_+"Name");			/* Element.classList */
+		addProp( WIN[ ELEMENT ], CLASS_LIST,	CLASS_+"Name");			/* Element.classList */
 		addProp( WIN[ HTML_+ "Link"		+ ELEMENT ], REL_LIST, REL);	/* HTMLLinkElement.relList */
 		addProp( WIN[ HTML_+ "Anchor"	+ ELEMENT ], REL_LIST, REL);	/* HTMLAnchorElement.relList */
 		addProp( WIN[ HTML_+ "Area"		+ ELEMENT ], REL_LIST, REL);	/* HTMLAreaElement.relList */
+	}
+
+
+	/** Possible support, but let's check for bugs. */
+	else{
+		dummyNode			=	DOC[ CREATE_ELEMENT ](DIV);
+		dummyNodeClasses	=	dummyNode[CLASS_LIST];
+
+		/** Check if the "force" option of .toggle is supported. */
+		if(dummyNodeClasses[TOGGLE](PROTOTYPE, FALSE)){
+
+			WIN[DOM_TOKEN_LIST][PROTOTYPE][TOGGLE]	=	function(token, force){
+				var THIS	=	this;
+				THIS[(force = UNDEF === force ? !THIS.contains(token) : force) ? ADD : REMOVE](token);
+				return !!force;
+			};
+		}
 	}
 }());

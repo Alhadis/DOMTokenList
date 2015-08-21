@@ -1,0 +1,10 @@
+{
+	"name":         "DOMTokenList-Polyfill",
+	"repository":   "Alhadis/DOMTokenList-Polyfill",
+	"description":  "Enables support for the DOMTokenList interface in IE8-9, and fixes buggy implementations in newer browsers.",
+	"keywords":     ["classList", "class-list", "token-list", "tokens", "css", "compatibility", "ie9", "ie8", "domtokenlist"],
+	"license":      "MIT",
+	"version":      "v0.2",
+	"main":         "token-list.js",
+	"scripts":      ["token-list.js"]
+}

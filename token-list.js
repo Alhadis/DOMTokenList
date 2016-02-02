@@ -64,7 +64,6 @@
 		tokenMap    = {},
 		length      = 0,
 		maxLength   = 0,
-		lastValue,
 		
 		
 		reindex     = function(){
@@ -100,15 +99,13 @@
 					}
 			
 			
-			/** Check if the subject attribute of the target element has changed since the tokenList was last used. If so, repopulate the internal token lists. */
-			if(lastValue !== el[prop]){
-				tokens   = ("" + el[prop]).replace(/^\s+|\s+$/g, "").split(rSpace);
-				tokenMap = {};
-				for(i = 0; i < tokens[ LENGTH ]; ++i)
-					tokenMap[tokens[i]] = TRUE;
-				length = tokens[ LENGTH ];
-				reindex();
-			}
+			/** Repopulate the internal token lists */
+			tokens   = ("" + el[prop]).replace(/^\s+|\s+$/g, "").split(rSpace);
+			tokenMap = {};
+			for(i = 0; i < tokens[ LENGTH ]; ++i)
+				tokenMap[tokens[i]] = TRUE;
+			length = tokens[ LENGTH ];
+			reindex();
 		};
 		
 		

@@ -1,14 +1,17 @@
 # NOTE: This file's for development purposes only. You won't ever need this.
 
-SRC := token-list.js svg-fix.js
-OBJ := $(addprefix min/,$(SRC))
+SRC_DIR := src
+SRC     := token-list.js svg-fix.js
+OBJ     := $(addprefix min/,$(SRC))
 
+
+# Top-level tasks
 all: watch js
 js: $(OBJ) update-sizes
 
 
 # Compress source file
-min/%.js: %.js
+min/%.js: src/%.js
 	uglifyjs -c --mangle < $^ > $@
 
 
@@ -28,7 +31,7 @@ STFU := /dev/null
 # Update target when its source file is updated
 watch:
 	@watchman watch $(PWD) > $(STFU)
-	@watchman -- trigger $(PWD) remake-js '*.js' -- make js > $(STFU)
+	@watchman -- trigger $(PWD) remake-js '$(SRC_DIR)/*.js' -- make js > $(STFU)
 
 # Stop updating target
 unwatch:

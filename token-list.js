@@ -35,6 +35,8 @@
 	TOGGLE          = METHODS[4],
 	PROTOTYPE       = "prototype",
 
+	SVG             = window["SVG"+ELEMENT],
+	SVG_NS          = "http://www.w3.org/2000/svg",
 
 
 	/** Ascertain browser support for Object.defineProperty */
@@ -56,7 +58,7 @@
 
 
 	/** DOMTokenList interface replacement */
-	DOMTokenList = function(el, prop){
+	DOMTokenList = function(el, prop, svgAttr){
 		var THIS    = this,
 		
 		/** Private variables */
@@ -102,7 +104,8 @@
 			
 			/** Check if the subject attribute of the target element has changed since the tokenList was last used. If so, repopulate the internal token lists. */
 			if(lastValue !== el[prop]){
-				tokens   = ("" + el[prop]).replace(/^\s+|\s+$/g, "").split(rSpace);
+				tokens   = el[prop];
+				tokens   = ("" + (/SVG/.test(tokens.constructor) ? tokens.animVal : tokens)).replace(/^\s+|\s+$/g, "").split(rSpace);
 				tokenMap = {};
 				for(i = 0; i < tokens[ LENGTH ]; ++i)
 					tokenMap[tokens[i]] = TRUE;
@@ -111,6 +114,13 @@
 			}
 		};
 		
+		/** SVG properties work a little differently to their HTML counterparts due to namespaces */
+		if(svgAttr && SVG && el instanceof SVG)
+			OBJ[ DEFINE_PROPERTY ](el, prop, {
+				configurable: true,
+				get: function( ){  return this.getAttribute(svgAttr); },
+				set: function(i){  this.setAttribute(svgAttr, i);     }
+			});
 		
 		
 		/** Populate our internal token list if the targeted attribute of the subject element isn't empty. */
@@ -230,7 +240,7 @@
 	
 	
 	/** Polyfills a property with a DOMTokenList */
-	addProp = function(o, name, attr){
+	addProp = function(o, name, attr, svgAttr){
 		
 		defineGetter(o[PROTOTYPE], name, function(){
 			var tokenList,
@@ -269,10 +279,10 @@
 				/** Couldn't find an element's reflection inside the mirror. Materialise one. */
 				visage || (visage = mirror.appendChild(DOC[ CREATE_ELEMENT ](DIV)));
 				
-				tokenList = DOMTokenList.call(visage, THIS, attr);
+				tokenList = DOMTokenList.call(visage, THIS, attr, svgAttr);
 			}
 			
-			else tokenList = new DOMTokenList(THIS, attr);
+			else tokenList = new DOMTokenList(THIS, attr, svgAttr);
 			
 			
 			defineGetter(THIS, name, function(){ return tokenList; });
@@ -302,10 +312,10 @@
 		DOMTokenList.polyfill   = TRUE;
 		WIN[ DOM_TOKEN_LIST ]   = DOMTokenList;
 		
-		addProp( WIN[ ELEMENT ], CLASS_LIST, CLASS_ + "Name");      /* Element.classList */
-		addProp( WIN[ HTML_+ "Link"   + ELEMENT ], REL_LIST, REL);  /* HTMLLinkElement.relList */
-		addProp( WIN[ HTML_+ "Anchor" + ELEMENT ], REL_LIST, REL);  /* HTMLAnchorElement.relList */
-		addProp( WIN[ HTML_+ "Area"   + ELEMENT ], REL_LIST, REL);  /* HTMLAreaElement.relList */
+		addProp( WIN[ ELEMENT ], CLASS_LIST, CLASS_ + "Name", CLASS_); /* Element.classList */
+		addProp( WIN[ HTML_+ "Link"   + ELEMENT ], REL_LIST, REL);     /* HTMLLinkElement.relList */
+		addProp( WIN[ HTML_+ "Anchor" + ELEMENT ], REL_LIST, REL);     /* HTMLAnchorElement.relList */
+		addProp( WIN[ HTML_+ "Area"   + ELEMENT ], REL_LIST, REL);     /* HTMLAreaElement.relList */
 	}
 	
 	

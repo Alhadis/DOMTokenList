@@ -1,4 +1,5 @@
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="256px" height="239px" viewBox="0 0 256 239">
+<script href="../svg-fix.js"    src="../svg-fix.js"></script>
 <script href="../token-list.js" src="../token-list.js"></script>
 <path class="topaz virtue rot" d="M1.0247753,92.0160294c3.172817-7.3840179,12.1991968-20.668251,12.1991968-20.668251
 	s7.7794189-12.5197601,7.612751-0.6864319c-0.0542355,3.8508224-0.3632488,10.1025543,1.1367512,11.9358826

@@ -1,7 +1,7 @@
 /** DOMTokenList polyfill */
 (function(){
 	"use strict";
-
+	
 	/*<*/
 	var UNDEF,
 	WIN   = window,
@@ -11,7 +11,7 @@
 	TRUE  = true,
 	FALSE = false,
 	/*>*/
-
+	
 	/** Munge the hell out of our string literals. Saves a tonne of space after compression. */
 	SPACE           = " ",
 	ELEMENT         = "Element",
@@ -34,13 +34,13 @@
 	REMOVE          = METHODS[3],
 	TOGGLE          = METHODS[4],
 	PROTOTYPE       = "prototype",
-	SVG             = WIN["SVG"+ELEMENT],
-
-
+	
+	
+	
 	/** Ascertain browser support for Object.defineProperty */
 	dpSupport       = DEFINE_PROPERTY in OBJ || DEFINE_GETTER in OBJ[ PROTOTYPE ] || NULL,
-
-
+	
+	
 	/** Wrapper for Object.defineProperty that falls back to using the legacy __defineGetter__ method if available. */
 	defineGetter    = function(object, name, fn, configurable){
 		if(OBJ[ DEFINE_PROPERTY ])
@@ -51,12 +51,12 @@
 		
 		else object[ DEFINE_GETTER ](name, fn);
 	},
-
-
-
-
+	
+	
+	
+	
 	/** DOMTokenList interface replacement */
-	DOMTokenList = function(el, prop, svgAttr){
+	DOMTokenList = function(el, prop){
 		var THIS    = this,
 		
 		/** Private variables */
@@ -102,8 +102,7 @@
 			
 			/** Check if the subject attribute of the target element has changed since the tokenList was last used. If so, repopulate the internal token lists. */
 			if(lastValue !== el[prop]){
-				tokens   = el[prop];
-				tokens   = ("" + (/SVG/.test(tokens.constructor) ? tokens.animVal : tokens)).replace(/^\s+|\s+$/g, "").split(rSpace);
+				tokens   = ("" + el[prop]).replace(/^\s+|\s+$/g, "").split(rSpace);
 				tokenMap = {};
 				for(i = 0; i < tokens[ LENGTH ]; ++i)
 					tokenMap[tokens[i]] = TRUE;
@@ -112,13 +111,6 @@
 			}
 		};
 		
-		/** SVG properties work a little differently to their HTML counterparts due to namespaces */
-		if(svgAttr && SVG && el instanceof SVG)
-			OBJ[ DEFINE_PROPERTY ](el, prop, {
-				configurable: true,
-				get: function( ){  return this.getAttribute(svgAttr); },
-				set: function(i){  this.setAttribute(svgAttr, i);     }
-			});
 		
 		
 		/** Populate our internal token list if the targeted attribute of the subject element isn't empty. */
@@ -126,7 +118,7 @@
 		
 		
 		
-		/** Returns the number of tokens in the underlying string. Read-only. */
+		/** Return the number of tokens in the underlying string. Read-only. */
 		defineGetter(THIS, LENGTH, function(){
 			preop();
 			return length;
@@ -142,14 +134,14 @@
 		
 		
 		
-		/** Returns an item in the list by its index (or undefined if the number is greater than or equal to the length of the list) */
+		/** Return an item in the list by its index (or undefined if the number is greater than or equal to the length of the list) */
 		THIS.item = function(idx){
 			preop();
 			return tokens[idx];
 		};
 		
 		
-		/** Returns TRUE if the underlying string contains `token`; otherwise, FALSE. */
+		/** Return TRUE if the underlying string contains `token`; otherwise, FALSE. */
 		THIS[ CONTAINS ] = function(token){
 			preop();
 			return !!tokenMap[token];
@@ -157,7 +149,7 @@
 		
 		
 		
-		/** Adds one or more tokens to the underlying string. */
+		/** Add one or more tokens to the underlying string. */
 		THIS[ADD] = function(){
 			preop[APPLY](THIS, args = arguments);
 
@@ -179,7 +171,7 @@
 		
 		
 		
-		/** Removes one or more tokens from the underlying string. */
+		/** Remove one or more tokens from the underlying string. */
 		THIS[ REMOVE ] = function(){
 			preop[APPLY](THIS, args = arguments);
 			
@@ -203,7 +195,7 @@
 		
 		
 		
-		/** Adds or removes a token depending on whether it's already contained within the token list. */
+		/** Add or remove a token depending on whether it's already contained within the token list. */
 		THIS[TOGGLE] = function(token, force){
 			preop[APPLY](THIS, [token]);
 			
@@ -238,7 +230,7 @@
 	
 	
 	/** Polyfills a property with a DOMTokenList */
-	addProp = function(o, name, attr, svgAttr){
+	addProp = function(o, name, attr){
 		
 		defineGetter(o[PROTOTYPE], name, function(){
 			var tokenList,
@@ -277,10 +269,10 @@
 				/** Couldn't find an element's reflection inside the mirror. Materialise one. */
 				visage || (visage = mirror.appendChild(DOC[ CREATE_ELEMENT ](DIV)));
 				
-				tokenList = DOMTokenList.call(visage, THIS, attr, svgAttr);
+				tokenList = DOMTokenList.call(visage, THIS, attr);
 			}
 			
-			else tokenList = new DOMTokenList(THIS, attr, svgAttr);
+			else tokenList = new DOMTokenList(THIS, attr);
 			
 			
 			defineGetter(THIS, name, function(){ return tokenList; });
@@ -294,10 +286,10 @@
 	testList,
 	nativeAdd,
 	nativeRemove;
-
-
-
-
+	
+	
+	
+	
 	/** No discernible DOMTokenList support whatsoever. Time to remedy that. */
 	if(!WIN[ DOM_TOKEN_LIST ]){
 		
@@ -310,10 +302,10 @@
 		DOMTokenList.polyfill   = TRUE;
 		WIN[ DOM_TOKEN_LIST ]   = DOMTokenList;
 		
-		addProp( WIN[ ELEMENT ], CLASS_LIST, CLASS_ + "Name", CLASS_); /* Element.classList */
-		addProp( WIN[ HTML_+ "Link"   + ELEMENT ], REL_LIST, REL);     /* HTMLLinkElement.relList */
-		addProp( WIN[ HTML_+ "Anchor" + ELEMENT ], REL_LIST, REL);     /* HTMLAnchorElement.relList */
-		addProp( WIN[ HTML_+ "Area"   + ELEMENT ], REL_LIST, REL);     /* HTMLAreaElement.relList */
+		addProp( WIN[ ELEMENT ], CLASS_LIST, CLASS_ + "Name");      /* Element.classList */
+		addProp( WIN[ HTML_+ "Link"   + ELEMENT ], REL_LIST, REL);  /* HTMLLinkElement.relList */
+		addProp( WIN[ HTML_+ "Anchor" + ELEMENT ], REL_LIST, REL);  /* HTMLAnchorElement.relList */
+		addProp( WIN[ HTML_+ "Area"   + ELEMENT ], REL_LIST, REL);  /* HTMLAreaElement.relList */
 	}
 	
 	
@@ -340,14 +332,14 @@
 				for(var i = 0, args = arguments; i < args[LENGTH]; ++i)
 					nativeAdd.call(this, args[i]);
 			};
-
+			
 			PROTOTYPE[REMOVE] = function(){
 				for(var i = 0, args = arguments; i < args[LENGTH]; ++i)
 					nativeRemove.call(this, args[i]);
 			};
 		}
-
-
+		
+		
 		/** Check if the "force" option of .toggle is supported. */
 		if(testList[TOGGLE](LIST, FALSE))
 			PROTOTYPE[TOGGLE] = function(token, force){

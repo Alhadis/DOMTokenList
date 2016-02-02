@@ -12,8 +12,8 @@ This polyfill works at feature-level, meaning it doesn't identify shortcomings b
 that's common sense to most developers these days).
 
 ## Total size
-* 2.46 KBs minified
-* 1.31 KBs minified & gzipped
+* 2.27 KBs minified
+* 1.22 KBs minified & gzipped
 
 ## Why should I use yours? Others work fine.
 They might, but so far, every one I've encountered has issues working with both the `classList` and `className` attributes simultaneously.

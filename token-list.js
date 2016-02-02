@@ -34,9 +34,7 @@
 	REMOVE          = METHODS[3],
 	TOGGLE          = METHODS[4],
 	PROTOTYPE       = "prototype",
-
-	SVG             = window["SVG"+ELEMENT],
-	SVG_NS          = "http://www.w3.org/2000/svg",
+	SVG             = WIN["SVG"+ELEMENT],
 
 
 	/** Ascertain browser support for Object.defineProperty */

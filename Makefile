@@ -1,21 +1,20 @@
 # NOTE: This file's for development purposes only. You won't ever need this.
 
-SOURCE := token-list.js
-TARGET := token-list.min.js
+OBJ := token-list.min.js svg-fix.min.js
 
 all: watch js
-js: $(TARGET) update-sizes
+js: $(OBJ) update-sizes
 
 
 # Compress source file
-$(TARGET): $(SOURCE)
+%.min.js: %.js
 	uglifyjs -c --mangle < $^ > $@
 
 
 # Update the filesizes mentioned in the readme
-update-sizes: $(TARGET)
-	@s1='* '$$(format-bytes -pf $^)' minified'; \
-	s2='* '$$(format-bytes -p $$(gzip -c "$^" | wc -c))' minified & gzipped'; \
+update-sizes: $(OBJ)
+	@s1='* '$$(format-bytes -pf $<)' minified'; \
+	s2='* '$$(format-bytes -p $$(gzip -c "$<" | wc -c))' minified & gzipped'; \
 	repl=$$(printf "\n%s\n%s" "$$s1" "$$s2"); \
 	perl -0777 -pi -e "s/(## Total size)(\n\*[^\n]+){2}/\$$1$$repl/gms" README.md
 
@@ -28,7 +27,7 @@ STFU := /dev/null
 # Update target when its source file is updated
 watch:
 	@watchman watch $(PWD) > $(STFU)
-	@watchman -- trigger $(PWD) remake-js $(SOURCE) -- make js > $(STFU)
+	@watchman -- trigger $(PWD) remake-js '*.js' -- make js > $(STFU)
 
 # Stop updating target
 unwatch:
@@ -37,6 +36,6 @@ unwatch:
 
 # Kill compressed file
 clean:
-	@rm -f $(TARGET)
+	@rm -f $(OBJ)
 
 .PHONY: watch unwatch clean

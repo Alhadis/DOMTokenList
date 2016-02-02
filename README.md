@@ -15,6 +15,10 @@ that's common sense to most developers these days).
 * 2.27 KBs minified
 * 1.22 KBs minified & gzipped
 
+## SVG support
+Include `svg-fix.js` before the main polyfill if you're working with SVG elements.
+For modularity's sake, I've isolated all SVG-specific fixes to their own file.
+
 ## Why should I use yours? Others work fine.
 They might, but so far, every one I've encountered has issues working with both the `classList` and `className` attributes simultaneously.
 

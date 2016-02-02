@@ -1,13 +1,14 @@
 # NOTE: This file's for development purposes only. You won't ever need this.
 
-OBJ := token-list.min.js svg-fix.min.js
+SRC := token-list.js svg-fix.js
+OBJ := $(addprefix min/,$(SRC))
 
 all: watch js
 js: $(OBJ) update-sizes
 
 
 # Compress source file
-%.min.js: %.js
+min/%.js: %.js
 	uglifyjs -c --mangle < $^ > $@
 
 
@@ -34,7 +35,7 @@ unwatch:
 	@watchman watch-del $(PWD) > $(STFU)
 
 
-# Kill compressed file
+# Kill compressed files
 clean:
 	@rm -f $(OBJ)
 

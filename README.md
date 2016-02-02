@@ -12,8 +12,8 @@ This polyfill works at feature-level, meaning it doesn't identify shortcomings b
 that's common sense to most developers these days).
 
 ## Total size
-* 2.25 KBs minified
-* 1.21 KBs minified & gzipped
+* 2.27 KBs minified
+* 1.22 KBs minified & gzipped
 
 ## SVG support
 Include `svg-fix.js` before the main polyfill if you're working with SVG elements.

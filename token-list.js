@@ -99,8 +99,13 @@
 					}
 			
 			
+			/** Split the new value apart by whitespace*/
+			tokens = ("" + el[prop]).replace(/^\s+|\s+$/g, "").split(rSpace);
+			
+			/** Avoid treating blank strings as single-item token lists */
+			if("" === tokens[0]) tokens = [];
+			
 			/** Repopulate the internal token lists */
-			tokens   = ("" + el[prop]).replace(/^\s+|\s+$/g, "").split(rSpace);
 			tokenMap = {};
 			for(i = 0; i < tokens[ LENGTH ]; ++i)
 				tokenMap[tokens[i]] = TRUE;

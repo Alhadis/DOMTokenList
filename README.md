@@ -4,6 +4,7 @@ DOMTokenList Polyfill
 Enables support for the DOMTokenList interface in IE8-9, and fixes buggy implementations in newer browsers.
 
 ```bash
+bower install domtokenlist
 npm install domtokenlist
 component install Alhadis/DOMTokenList
 ```

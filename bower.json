@@ -1,0 +1,16 @@
+{
+	"name": "domtokenlist",
+	"description": "Enables support for the DOMTokenList interface in IE8-9, and fixes buggy implementations in newer browsers.",
+	"keywords": ["classList", "class-list", "token-list", "tokens", "css", "compatibility", "ie9", "ie8", "domtokenlist", "polyfill"],
+	"main": [
+		"src/token-list.js",
+		"src/svg-fix.js"
+	],
+	"moduleType": "globals",
+	"license": "ISC",
+	"ignore": ["demos"],
+	"repository": {
+		"type": "git",
+		"url":  "https://github.com/Alhadis/DOMTokenList"
+	}
+}
